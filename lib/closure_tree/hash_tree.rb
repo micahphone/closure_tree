@@ -2,8 +2,9 @@ module ClosureTree
   module HashTree
     extend ActiveSupport::Concern
 
-    def hash_tree_scope(limit_depth = nil)
+    def hash_tree_scope(limit_depth = nil, block = nil)
       scope = self_and_descendants
+      scope = block.call(scope) if block
       if limit_depth
         scope.where("#{_ct.quoted_hierarchy_table_name}.generations <= #{limit_depth - 1}")
       else
@@ -11,8 +12,8 @@ module ClosureTree
       end
     end
 
-    def hash_tree(options = {})
-      self.class.build_hash_tree(hash_tree_scope(options[:limit_depth]))
+    def hash_tree(options = {}, &block)
+      self.class.build_hash_tree(hash_tree_scope(options[:limit_depth], block))
     end
 
     module ClassMethods
